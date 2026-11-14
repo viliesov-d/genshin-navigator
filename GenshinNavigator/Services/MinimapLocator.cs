@@ -42,8 +42,16 @@ public sealed class MinimapLocator : IDisposable
             if (good.Length < 10)
                 return MapMatchResult.NotFound("Не знайдено надійного збігу з обраною картою.");
 
-            var refPoints = good.Select(match => _referenceKeypoints[match.TrainIdx].Pt).ToArray();
-            var queryPoints = good.Select(match => queryKeypoints[match.QueryIdx].Pt).ToArray();
+            var refPoints = good.Select(match =>
+            {
+                var point = _referenceKeypoints[match.TrainIdx].Pt;
+                return new Point2d(point.X, point.Y);
+            }).ToArray();
+            var queryPoints = good.Select(match =>
+            {
+                var point = queryKeypoints[match.QueryIdx].Pt;
+                return new Point2d(point.X, point.Y);
+            }).ToArray();
             using var inlierMask = new Mat();
             using var homography = Cv2.FindHomography(
                 refPoints, queryPoints, HomographyMethods.Ransac, 4.5, inlierMask);
