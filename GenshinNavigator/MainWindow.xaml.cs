@@ -122,10 +122,8 @@ public partial class MainWindow : Window
             }
             else
             {
-                PositionStatus.Text = "Позицію поки не зіставлено";
-                PositionDetailStatus.Text = result.Message == "Не знайдено надійного збігу з обраною картою."
-                    ? "Спробуйте скриншот карти з тієї самої області та масштабуйте її ближче"
-                    : result.Message;
+                PositionStatus.Text = "Позицію не зіставлено";
+                PositionDetailStatus.Text = result.Message;
             }
         }
         catch (Exception error) when (IsTrackingException(error))

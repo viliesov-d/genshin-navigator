@@ -32,7 +32,7 @@ public sealed class MinimapLocator : IDisposable
             var orb = GetOrb();
             orb.DetectAndCompute(query, null, out var queryKeypoints, queryDescriptors);
             if (queryKeypoints.Length < 12 || queryDescriptors.Empty())
-                return MapMatchResult.NotFound("На мінікарті замало деталей для зіставлення.");
+                return MapMatchResult.NotFound($"На мінікарті знайдено лише {queryKeypoints.Length} ключових точок.");
 
             using var matcher = new BFMatcher(NormTypes.Hamming, crossCheck: false);
             var pairs = matcher.KnnMatch(queryDescriptors, _referenceDescriptors, k: 2);
@@ -41,7 +41,7 @@ public sealed class MinimapLocator : IDisposable
                 .Select(pair => pair[0])
                 .ToArray();
             if (good.Length < 10)
-                return MapMatchResult.NotFound("Не знайдено надійного збігу з обраною картою.");
+                return MapMatchResult.NotFound($"Знайшлося {good.Length} попередніх збігів; потрібно щонайменше 10. Перевірте область і масштаб скриншота карти.");
 
             var refPoints = good.Select(match =>
             {
@@ -55,15 +55,16 @@ public sealed class MinimapLocator : IDisposable
             }).ToArray();
             using var inlierMask = new Mat();
             using var homography = Cv2.FindHomography(
-                refPoints, queryPoints, HomographyMethods.Ransac, 4.5, inlierMask);
+                refPoints, queryPoints, HomographyMethods.Ransac, 5.5, inlierMask);
             if (homography.Empty())
-                return MapMatchResult.NotFound("Збіг карти нестабільний. Спробуйте чіткіший скриншот.");
+                return MapMatchResult.NotFound($"Геометрія не підтвердила збіг ({good.Length} кандидатів). Спробуйте чіткіший скриншот карти.");
 
             var inliers = 0;
             for (var i = 0; i < good.Length; i++)
                 if (inlierMask.At<byte>(i) != 0) inliers++;
-            if (inliers < 8)
-                return MapMatchResult.NotFound("Збіг карти недостатньо точний.");
+            var inlierRatio = (double)inliers / good.Length;
+            if (inliers < 8 || inlierRatio < 0.2)
+                return MapMatchResult.NotFound($"Збіг не пройшов перевірку: {inliers} із {good.Length} точок узгодилися. Потрібні щонайменше 8 точок і 20% узгодження.");
 
             using var queryToMap = homography.Inv();
             // У мінікарті маркер персонажа розташований трохи правіше й нижче геометричного центра.
@@ -74,7 +75,7 @@ public sealed class MinimapLocator : IDisposable
             if (mapCenter.X < 0 || mapCenter.Y < 0 || mapCenter.X >= _referenceSize.Width || mapCenter.Y >= _referenceSize.Height)
                 return MapMatchResult.NotFound("Знайдений фрагмент лежить за межами зображення карти.");
 
-            var confidence = Math.Clamp((double)inliers / good.Length, 0, 1);
+            var confidence = Math.Clamp(inlierRatio, 0, 1);
             return new MapMatchResult(true, mapCenter.X, mapCenter.Y, inliers, confidence,
                 $"Збіг знайдено · {inliers} точок · {confidence:P0}");
         }
@@ -128,7 +129,9 @@ public sealed class MinimapLocator : IDisposable
         return gray;
     }
 
-    private ORB GetOrb() => _orb ??= ORB.Create(2400);
+    // Більше рівнів масштабу важливо: у мінікарті та скриншоті світу одна й та сама
+    // місцевість може мати суттєво різний розмір.
+    private ORB GetOrb() => _orb ??= ORB.Create(nFeatures: 6000, scaleFactor: 1.2f, nLevels: 12);
 
     public void Dispose()
     {
