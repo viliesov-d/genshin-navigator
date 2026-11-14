@@ -52,9 +52,9 @@
         <StackPanel Grid.Column="1" VerticalAlignment="Center">
           <TextBlock x:Name="GameStatus" Text="Перевірка гри…" Foreground="#FFF4F6F8"
                      FontSize="14" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
-          <TextBlock Text="Позицію ще не визначено" Foreground="{StaticResource MutedBrush}"
+          <TextBlock x:Name="PositionStatus" Text="Позицію ще не визначено" Foreground="{StaticResource MutedBrush}"
                      FontSize="11" Margin="0,4,0,0" />
-          <TextBlock Text="Навігація стане доступною після калібрування карти"
+          <TextBlock x:Name="PositionDetailStatus" Text="Оберіть скриншот карти в налаштуваннях, щоб перевірити зіставлення"
                      Foreground="#FF7F8996" FontSize="10" TextWrapping="Wrap" Margin="0,7,0,0" />
         </StackPanel>
       </Grid>
@@ -65,7 +65,7 @@
           <ColumnDefinition Width="Auto" />
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
-        <TextBlock x:Name="RegionStatus" Text="Маркери ще не підключені" Foreground="#FF99A3B0"
+        <TextBlock x:Name="RegionStatus" Text="Маркерна база ще не підключена" Foreground="#FF99A3B0"
                    FontSize="10" VerticalAlignment="Center" />
         <Button Grid.Column="1" Content="‹" IsEnabled="False" ToolTip="Попередня ціль"
                 Style="{StaticResource NavButton}" />
