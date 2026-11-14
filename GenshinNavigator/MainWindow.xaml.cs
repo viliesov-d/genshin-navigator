@@ -14,7 +14,6 @@ public partial class MainWindow : Window
     private readonly DispatcherTimer _saveTimer = new() { Interval = TimeSpan.FromMilliseconds(400) };
     private AppSettings _settings = new();
     private bool _isUpdatingPosition;
-    private System.Windows.Shapes.Ellipse? _statusDot;
 
     public MainWindow()
     {
@@ -27,7 +26,6 @@ public partial class MainWindow : Window
 
     private void Window_Loaded(object sender, RoutedEventArgs e)
     {
-        _statusDot = FindStatusDot();
         _settings = _settingsStore.Load();
         Left = _settings.Left;
         Top = _settings.Top;
@@ -39,23 +37,9 @@ public partial class MainWindow : Window
     {
         var isRunning = _gameMonitor.IsRunning();
         GameStatus.Text = isRunning ? "Genshin Impact запущена" : "Очікування запуску гри";
-        if (_statusDot is not null)
-            _statusDot.Fill = isRunning
-                ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(87, 201, 142))
-                : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(104, 115, 129));
-    }
-
-    private System.Windows.Shapes.Ellipse? FindStatusDot() =>
-        FindVisualChildren<System.Windows.Shapes.Ellipse>(Card).FirstOrDefault();
-
-    private static IEnumerable<T> FindVisualChildren<T>(DependencyObject parent) where T : DependencyObject
-    {
-        for (var i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent); i++)
-        {
-            var child = System.Windows.Media.VisualTreeHelper.GetChild(parent, i);
-            if (child is T match) yield return match;
-            foreach (var nested in FindVisualChildren<T>(child)) yield return nested;
-        }
+        GameProcessDot.Fill = isRunning
+            ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(87, 201, 142))
+            : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(104, 115, 129));
     }
 
     private void Header_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

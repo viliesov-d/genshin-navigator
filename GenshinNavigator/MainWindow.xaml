@@ -23,7 +23,7 @@
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-          <Ellipse Width="8" Height="8" Fill="#FF687381" Margin="0,0,8,0" />
+          <Ellipse x:Name="GameProcessDot" Width="8" Height="8" Fill="#FF687381" Margin="0,0,8,0" />
           <TextBlock Text="GENSHIN NAVIGATOR" Foreground="#FFF4F6F8" FontSize="11"
                      FontWeight="Bold" />
           <TextBlock Text="  ·  ЕТАП 1/6" Foreground="{StaticResource MutedBrush}" FontSize="9"
